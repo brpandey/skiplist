@@ -31,7 +31,7 @@ func NewList() *SkipList {
 func (sl *SkipList) Add (value int) {
         nodeLevelIndex := RandomLevel()
 
-        fmt.Println("0) Level Index is ", nodeLevelIndex)
+        fmt.Printf("Adding %d to %d levels from floor", value, nodeLevelIndex+1)
 
         next := make([]*Node, nodeLevelIndex+1)
         node := &Node{value: value, next: next}
@@ -52,8 +52,8 @@ Outer:
                         } else if cur.next[i].value == value {
                                 break Outer // value already exists -> no need to insert
                         } else {
-                                // if cur value is greater go to next level
-                                // given the outer for loop iteration with the same cur
+                                // if cur value is greater than value go to next level below
+                                // by breaking from inner and increment level with the same cur node
                                 break
                         }
                 }
@@ -62,32 +62,77 @@ Outer:
                         // link new node after current node
                         node.next[i] = cur.next[i]
                         cur.next[i] = node
-
-                        fmt.Println("3) Linked new Node. head is ", sl.head, "new node is ", node)
                 }
         }
 }
 
-func (sl *SkipList) Find (value int) (bool, *Node) {
-        cur := sl.head
+func (sl *SkipList) Delete (value int) bool {
+        var prev *Node
+        del, prevs, level := sl.Find(value)
 
-        for i := sl.height - 1; i >= 0; i-- {
-                for cur.next[i] != nil {
-                        if cur.next[i].value > value {
-                                // stay at cur node but just drop down a level on outer loop iteration
-                                break
-                        }
+        if del == nil {
+                fmt.Printf("Value %d not found, hence no deletion", value)
+                return false
+        }
 
-                        if cur.next[i].value == value {
-                                return true, cur.next[i]
-                        }
+        for i := level; i >= 0; i-- { // Traverse vertically from top to bottom
+                prev = prevs[level-i] // select prev node given each level where delete node is found
+                prev.next[i] = del.next[i];
+        }
 
-                        cur = cur.next[i]
-                        fmt.Println("cur is ", cur)
+        sl.Prune()
+        return true
+}
+
+// Check for vertical levels that are empty given deleted node
+// Empty levels can only be singular or contiguous
+func (sl *SkipList) Prune () bool {
+        flag := false // indicates whether a vertical prune was done
+        h := sl.height - 1
+
+        for i := h; i > 0; i-- { // ignore base level 0
+                if sl.head.next[i] == nil {
+                        flag = true
+                        h--
                 }
         }
 
-        return false, nil
+        sl.height = h + 1
+        return flag
+}
+
+func (sl *SkipList) Find (value int) (*Node, []*Node, int) {
+        cur, top := sl.head, sl.height - 1
+        startLevel := 0
+
+        var node *Node
+        var prevs []*Node
+
+        // start top down
+        for i := top; i >= 0; i-- {
+                for cur.next[i] != nil {
+                        if cur.next[i].value < value {
+                                cur = cur.next[i]
+                        } else if cur.next[i].value == value {
+                                if len(prevs) == 0 {
+                                        startLevel = i
+                                        node = cur.next[i]
+                                }
+                                // store previous node to found node at each contiguous level found
+                                prevs = append(prevs, cur) 
+                                break
+                        } else {
+                                // stay at cur node but drop down a level
+                                break
+                        }
+                }
+        }
+
+        if len(prevs) > 0 {
+                return node, prevs, startLevel
+        } else {
+                return nil, nil, -1
+        }
 }
 
 func (sl *SkipList) Display () {
@@ -97,7 +142,7 @@ func (sl *SkipList) Display () {
         for i := top; i >= 0; i-- {
                 // show all the node values from the head node,
                 // hence reset back to head for each level
-                cur := sl.head 
+                cur := sl.head
                 fmt.Printf("L%d ", i)
 
                 for cur.next[i] != nil {
