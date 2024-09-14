@@ -135,22 +135,57 @@ func (sl *SkipList) Find (value int) (*Node, []*Node, int) {
         }
 }
 
+// Display skiplist structure ensuring columns are aligned
 func (sl *SkipList) Display () {
         fmt.Println("\nSkip List:")
+        cur := sl.head
+
+        // store key->column info in map
+        columns := make(map[int]int)
+
+        // count elements in botttom row
+        for i := 0; cur.next[0] != nil; i++ {
+                cur = cur.next[0]
+                columns[cur.value] = i
+        }
+
+        sl.Show(columns)
+}
+
+// Show skiplist structure with or without aligned columns
+func (sl *SkipList) Show (columns map[int]int) {
         top := sl.height - 1
+        var value int
 
         for i := top; i >= 0; i-- {
                 // show all the node values from the head node,
                 // hence reset back to head for each level
                 cur := sl.head
-                fmt.Printf("L%d ", i)
+                fmt.Printf("L%02d ", i)
+                value = cur.next[i].value
 
-                for cur.next[i] != nil {
-                        fmt.Printf("%d ---> ", cur.next[i].value)
+                for col := 0; cur.next[i] != nil; col++ {
+                        value = cur.next[i].value
+
+                        // print out base of arrow until column matches correct columns map value
+                        for columns != nil {
+                                if columns[value] == col {
+                                        fmt.Printf("-> %02d ", value)
+                                        break
+                                } else {
+                                        fmt.Printf("------")
+                                        col++
+                                }
+                        }
+
+                        if columns == nil {
+                                fmt.Printf("-> %02d ", value)
+                        }
+
                         cur = cur.next[i]
                 }
 
-                fmt.Printf(" nil \n")
+                fmt.Printf("-> nil \n")
         }
 
         fmt.Println("")
