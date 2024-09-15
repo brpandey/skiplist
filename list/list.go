@@ -7,11 +7,23 @@ import (
         "math/rand"
 )
 
+type Node struct {
+        value int
+        next [] *Node
+}
+
+func NewNode(value int) (*Node, int) {
+        height := RandomLevel() + 1
+        next := make([]*Node, height)
+        node := &Node{value: value, next: next}
+        return node, height
+}
+
 // OpType enum
 type OpType int
 
 const (
-	Add OpType = iota
+	Insert OpType = iota
         Delete
         Exists
 )
@@ -25,16 +37,10 @@ type SkipList struct {
         height int
 }
 
-type Node struct {
-        value int
-        next [] *Node
-}
-
 // Constructor
 func NewList() *SkipList {
         var n Node
         n.next = make([]*Node, SkipLevels)
-
         return &SkipList {head: &n, height: 1}
 }
 
@@ -61,7 +67,7 @@ Outer:         // start top down
                                         node = cur.next[i]
                                 }
 
-                                if opType == Add {
+                                if opType == Insert {
                                         prevs = nil
                                         break Outer // value already exists!
                                 }
@@ -77,7 +83,7 @@ Outer:         // start top down
                         }
                 }
 
-                if opType == Add {
+                if opType == Insert {
                         // store largest node (cur) that is smaller than value at each level
                         prevs = append(prevs, cur)
                         if startLevel == -1 { startLevel = i }
@@ -89,18 +95,15 @@ Outer:         // start top down
 
 // Add new value if not already present to SkipList
 func (sl *SkipList) Add (value int) {
-        nodeLevelIndex := RandomLevel()
-        fmt.Printf("Adding %d to %d levels from floor", value, nodeLevelIndex+1)
+        node, nodeHeight := NewNode(value)
+        fmt.Printf("Adding %d to %d levels from floor", value, nodeHeight)
 
-        next := make([]*Node, nodeLevelIndex+1)
-        node := &Node{value: value, next: next}
-
-        if nodeLevelIndex+1 > sl.height {
-                sl.height = nodeLevelIndex+1
+        if nodeHeight > sl.height {
+                sl.height = nodeHeight
         }
 
         var prev *Node
-        found, prevs, level := sl.FindWithOp(value, Add)
+        found, prevs, level := sl.FindWithOp(value, Insert)
 
         if found != nil {
                 fmt.Printf("Value %d already found, hence no add", value)
@@ -108,7 +111,7 @@ func (sl *SkipList) Add (value int) {
         }
 
         for i := level; i >= 0; i-- { // Traverse vertically from top to bottom
-                if i <= nodeLevelIndex { // Link new node as long as it matches new node's levels
+                if i <= nodeHeight-1 { // Link new node as long as it matches new node's levels
                         prev = prevs[level-i] // Select prev node given each level where node value highest-lower than value is found
                         node.next[i] = prev.next[i] // New node linked after prev node
                         prev.next[i] = node
