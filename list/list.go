@@ -181,7 +181,6 @@ func (sl *SkipList) Show (columns map[int]int) {
                 // hence reset back to head for each level iteration
                 cur := sl.head
                 fmt.Printf("L%02d ", i)
-                value = cur.next[i].value
 
                 for col := 0; cur.next[i] != nil; col++ {
                         value = cur.next[i].value
