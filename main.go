@@ -71,5 +71,23 @@ func main() {
                 fmt.Printf("(%d, %d) ", l, v)
         }
 
-        fmt.Println("")
+        fmt.Println("\n")
+        fmt.Printf("All Unique by Levels: ")
+
+        for l, v := range sl.AllUnique() {
+                fmt.Printf("(%d, %d) ", l, v)
+        }
+
+        fmt.Println("\n")
+
+        target := 15
+        fmt.Printf("Path Traversal for target %d: ", target)
+
+        var len = 0
+        for l, v := range sl.PathTraverse(target) {
+                fmt.Printf("(%d, %d) ", l, v)
+                len++
+        }
+
+        fmt.Printf("\nPath Traversal length is %d\n", len)
   }
