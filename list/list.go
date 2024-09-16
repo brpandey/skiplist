@@ -5,6 +5,7 @@ package list
 import (
         "fmt"
         "math/rand"
+        "iter"
 )
 
 type Node struct {
@@ -44,10 +45,44 @@ func NewList() *SkipList {
         return &SkipList {head: &n, height: 1}
 }
 
+// Go 1.23 (released a month ago) now supports standardized iterators, hence add them
+// Values is an iterator over the unique elements of sl
+func (sl *SkipList) Values() iter.Seq[int] {
+        return func(yield func(int) bool) {
+                cur := sl.head
+                for cur.next[0] != nil { // loop through bottom row only
+                        cur = cur.next[0]
+                        if !yield(cur.value) {
+                                return
+                        }
+                }
+        }
+}
+
+// All is an iterator over the elements of sl, including level info
+func (sl *SkipList) All() iter.Seq2[int, int] {
+        return func(yield func(int, int) bool) {
+                cur := sl.head
+                top := sl.height -1
+
+                for i := top; i >= 0; i-- {
+                        for cur.next[i] != nil { // loop through bottom row only
+                                cur = cur.next[i]
+                                if !yield(i, cur.value) {
+                                        return
+                                }
+                        }
+
+                        cur = sl.head
+                }
+        }
+}
+
+
 // Simple find which indicates whether value was found and returns relevant node
-func (sl *SkipList) Find (value int) (bool, *Node) {
+func (sl *SkipList) Find (value int) (*Node, bool) {
         node, _, _ := sl.FindWithOp(value, Exists)
-        return node != nil, node
+        return node, node != nil
 }
 
 // Find node with specified value given SkipList operation type

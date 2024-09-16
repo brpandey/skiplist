@@ -29,9 +29,9 @@ func main() {
         sl.Add(12)
         sl.Display()
 
-        flag1, find15 := sl.Find(15)
-        flag2, find10 := sl.Find(10)
-        flag3, find12 := sl.Find(12)
+        find15, flag1 := sl.Find(15)
+        find10, flag2 := sl.Find(10)
+        find12, flag3 := sl.Find(12)
 
         fmt.Println("Find 15, found? ", flag1, " value: ", find15)
         fmt.Println("Find 10, found? ", flag2, " value: ", find10)
@@ -42,7 +42,33 @@ func main() {
         sl.Delete(12)
         sl.Display()
 
-        flag3, find12 = sl.Find(12)
+        find12, flag3 = sl.Find(12)
 
         fmt.Println("Find 12 (again), found? ", flag3, " value: ", find12)
+
+        fmt.Println("Add 11")
+        sl.Add(11)
+        sl.Display()
+
+        // Demo Iterator functionality w/ All and AllWithLevels
+        fmt.Printf("Values: ")
+        for v := range sl.Values() {
+                fmt.Printf("%d ", v)
+        }
+
+        fmt.Println("")
+
+        fmt.Printf("All w/ Levels: ")
+        var prev int
+
+        for l, v := range sl.All() {
+                if l != prev {
+                        fmt.Println("")
+                        prev = l
+                }
+
+                fmt.Printf("(%d, %d) ", l, v)
+        }
+
+        fmt.Println("")
   }
