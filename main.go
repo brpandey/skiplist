@@ -46,8 +46,9 @@ func main() {
 
         fmt.Println("Find 12 (again), found? ", flag3, " value: ", find12)
 
-        fmt.Println("Add 11")
-        sl.Add(11)
+        fmt.Println("")
+        fmt.Println("Add 6")
+        sl.Add(6)
         sl.Display()
 
         // Demo Iterator functionality w/ All and AllWithLevels
