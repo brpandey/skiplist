@@ -17,7 +17,7 @@
 
 ### Example #1
 
-```golang
+```cpp
 $ ./skiplist 
 Add 4
 Adding 4 to 1 levels from floor
@@ -65,7 +65,7 @@ Find 12 (again), found?  false  value:  <nil>
 ```
 
 ### Example #2
-```java
+```cpp
 $ ./skiplist 
 Add 4
 Adding 4 to 1 levels from floor
@@ -132,7 +132,7 @@ All w/ Levels:
 ```
 
 ### Example #3
-```clojure
+```cpp
 
 $ ./skiplist 
 Add 4
