@@ -25,29 +25,19 @@ func (sl *SkipList[T]) Values() iter.Seq[T] {
 // All returns an iterator over the elements of sl, including level data as a
 // two-element tuple
 func (sl *SkipList[T]) All() iter.Seq2[int, T] {
-	return func(yield func(int, T) bool) {
-		if sl == nil {
-			return
-		}
-		cur := sl.head
-		top := sl.height - 1
-
-		for i := top; i >= 0; i-- {
-			for cur.next[i] != nil { // loop through bottom row only
-				cur = cur.next[i]
-				if !yield(i, cur.value) {
-					return
-				}
-			}
-
-			cur = sl.head
-		}
-	}
+        return sl.allWith(nil)
 }
 
 // AllUnique returns an iterator over the unique elements of sl with the highest
 // level they first occur at
 func (sl *SkipList[T]) AllUnique() iter.Seq2[int, T] {
+        seen := make(map[T]bool)
+        return sl.allWith(seen)
+}
+
+// allWith returns an iterator over the elements of sl with the highest
+// level they first occur at, if seen is passed in only the unique elements are returned
+func (sl *SkipList[T]) allWith(seen map[T]bool) iter.Seq2[int, T] {
 	return func(yield func(int, T) bool) {
 		if sl == nil {
 			return
@@ -55,28 +45,31 @@ func (sl *SkipList[T]) AllUnique() iter.Seq2[int, T] {
 		cur := sl.head
 		top := sl.height - 1
 
-		seen := make(map[T]bool)
 		var ok bool
 
 		for i := top; i >= 0; i-- {
 			for cur.next[i] != nil { // loop through bottom row only
 				cur = cur.next[i]
 
-				// track if value has been seen
-				if _, ok = seen[cur.value]; !ok {
-					seen[cur.value] = true
+                                if seen != nil {
+                                        // track if value has been seen
+                                        _, ok = seen[cur.value]
+                                        seen[cur.value] = true
+                                }
 
-					// don't yield if cur.value has been previously seen
-					if !yield(i, cur.value) {
-						return
-					}
-				}
+                                // 1) don't yield if cur.value has been previously seen
+                                // or 2) if seen not specified, attempt to yield
+                                if !ok && !yield(i, cur.value) {
+                                        return
+                                }
 			}
 
 			cur = sl.head
 		}
 	}
 }
+
+
 
 // Return iterator showing search path to find target value
 func (sl *SkipList[T]) PathTraverse(target T) iter.Seq2[int, T] {
@@ -84,11 +77,12 @@ func (sl *SkipList[T]) PathTraverse(target T) iter.Seq2[int, T] {
 		return nil
 	}
 	iter := sl.AllUnique()
-	iter = filter(iter, lessThanOrEqual, target)
+	iter = filter(iter, highestLower, target)
 	return iter
 }
 
-func lessThanOrEqual[T cmp.Ordered](value T, acc T, target T) (T, bool) {
+
+func highestLower[T cmp.Ordered](value T, acc T, target T) (T, bool) {
 	// if the value is the highest value that is lower than the target, update acc
 	if value <= target && value > acc {
 		acc = value
