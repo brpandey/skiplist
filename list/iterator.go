@@ -2,12 +2,13 @@ package list
 
 import (
 	"iter"
+        "cmp"
 )
 
-// Go 1.23 now supports standardized iterators
+// Go 1.23 supports standardized iterators
 // Values is an iterator over the value elements of sl
-func (sl *SkipList) Values() iter.Seq[int] {
-	return func(yield func(int) bool) {
+func (sl *SkipList[T]) Values() iter.Seq[T] {
+	return func(yield func(T) bool) {
 		if sl == nil {
 			return
 		}
@@ -23,8 +24,8 @@ func (sl *SkipList) Values() iter.Seq[int] {
 
 // All returns an iterator over the elements of sl, including level data as a
 // two-element tuple
-func (sl *SkipList) All() iter.Seq2[int, int] {
-	return func(yield func(int, int) bool) {
+func (sl *SkipList[T]) All() iter.Seq2[int, T] {
+	return func(yield func(int, T) bool) {
 		if sl == nil {
 			return
 		}
@@ -46,15 +47,15 @@ func (sl *SkipList) All() iter.Seq2[int, int] {
 
 // AllUnique returns an iterator over the unique elements of sl with the highest
 // level they first occur at
-func (sl *SkipList) AllUnique() iter.Seq2[int, int] {
-	return func(yield func(int, int) bool) {
+func (sl *SkipList[T]) AllUnique() iter.Seq2[int, T] {
+	return func(yield func(int, T) bool) {
 		if sl == nil {
 			return
 		}
 		cur := sl.head
 		top := sl.height - 1
 
-		seen := make(map[int]bool)
+		seen := make(map[T]bool)
 		var ok bool
 
 		for i := top; i >= 0; i-- {
@@ -78,7 +79,7 @@ func (sl *SkipList) AllUnique() iter.Seq2[int, int] {
 }
 
 // Return iterator showing search path to find target value
-func (sl *SkipList) PathTraverse(target int) iter.Seq2[int, int] {
+func (sl *SkipList[T]) PathTraverse(target T) iter.Seq2[int, T] {
 	if sl == nil {
 		return nil
 	}
@@ -87,7 +88,7 @@ func (sl *SkipList) PathTraverse(target int) iter.Seq2[int, int] {
 	return iter
 }
 
-func lessThanOrEqual(value int, acc int, target int) (int, bool) {
+func lessThanOrEqual[T cmp.Ordered](value T, acc T, target T) (T, bool) {
 	// if the value is the highest value that is lower than the target, update acc
 	if value <= target && value > acc {
 		acc = value
@@ -97,10 +98,10 @@ func lessThanOrEqual(value int, acc int, target int) (int, bool) {
 	}
 }
 
-func filter(it iter.Seq2[int, int], keep func(int, int, int) (int, bool), target int) iter.Seq2[int, int] {
-	return func(yield func(int, int) bool) {
+func filter[T cmp.Ordered](it iter.Seq2[int, T], keep func(T, T, T) (T, bool), target T) iter.Seq2[int, T] {
+	return func(yield func(int, T) bool) {
 		var ok bool
-		acc := 0
+		var acc T // needs to be a generic function e.g. min(T) to produce min value for T, hence use positive numbers
 		for k, v := range it {
 			if acc, ok = keep(v, acc, target); ok {
 				if !yield(k, v) {

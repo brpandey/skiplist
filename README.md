@@ -17,7 +17,7 @@
 
 ### Example #1
 
-```cpp
+```haskell
 $ ./skiplist 
 Add 4
 Adding 4 to 1 levels from floor
@@ -65,7 +65,7 @@ Find 12 (again), found?  false  value:  <nil>
 ```
 
 ### Example #2
-```cpp
+```haskell
 $ ./skiplist 
 Add 4
 Adding 4 to 1 levels from floor
@@ -132,7 +132,7 @@ All w/ Levels:
 ```
 
 ### Example #3
-```cpp
+```haskell
 
 $ ./skiplist 
 Add 4
@@ -217,3 +217,70 @@ All Unique by Levels: (4, 4) (4, 7) (1, 6) (1, 15) (0, 20)
 Path Traversal for target 15: (4, 4) (4, 7) (1, 15) 
 Path Traversal length is 3
 ```
+
+### Example #4 - strings
+
+```haskell
+
+$ ./skiplist 
+Add ba
+Adding ba to 1 levels from floor
+Skip List:
+L00 -> ba -> nil 
+
+Add ze
+Adding ze to 1 levels from floor
+Skip List:
+L00 -> ba -> ze -> nil 
+
+Add ca
+Adding ca to 1 levels from floor
+Skip List:
+L00 -> ba -> ca -> ze -> nil 
+
+Add co
+Adding co to 4 levels from floor
+Skip List:
+L03 -------------> co -> nil 
+L02 -------------> co -> nil 
+L01 -------------> co -> nil 
+L00 -> ba -> ca -> co -> ze -> nil 
+
+Add ew
+Adding ew to 2 levels from floor
+Skip List:
+L03 -------------> co -> nil 
+L02 -------------> co -> nil 
+L01 -------------> co -> ew -> nil 
+L00 -> ba -> ca -> co -> ew -> ze -> nil 
+
+Find 1, found?  true  value:  &{co [0xc0000942a0 0xc0000942a0 <nil> <nil>]}
+Find 2, found?  true  value:  &{ca [0xc000094270]}
+Find 3, found?  true  value:  &{ca [0xc000094270]}
+
+Delete co
+
+Skip List:
+L01 -------------> ew -> nil 
+L00 -> ba -> ca -> ew -> ze -> nil 
+
+Find co (again), found?  false  value:  <nil>
+
+Add bl
+Adding bl to 3 levels from floor
+Skip List:
+L02 -------> bl -> nil 
+L01 -------> bl -------> ew -> nil 
+L00 -> ba -> bl -> ca -> ew -> ze -> nil 
+
+Values: ba bl ca ew ze 
+All w/ Levels: 
+(2, bl) 
+(1, bl) (1, ew) 
+(0, ba) (0, bl) (0, ca) (0, ew) (0, ze) 
+
+All Unique by Levels: (2, bl) (1, ew) (0, ba) (0, ca) (0, ze) 
+
+Path Traversal for target ze: (2, bl) (1, ew) (0, ze) 
+Path Traversal length is 3
+``` 

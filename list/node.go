@@ -2,18 +2,19 @@ package list
 
 import (
 	"math/rand"
+        "cmp"
 )
 
-type Node struct {
-	value int
-	next  []*Node // forward next pointers (# is randomly generated)
+type Node[T cmp.Ordered] struct {
+	value T
+	next  []*Node[T] // forward next pointers (# is randomly generated)
 }
 
 // Node constructor
-func NewNode(value int) (*Node, int) {
+func NewNode[T cmp.Ordered](value T) (*Node[T], int) {
 	height := RandomLevel() + 1
-	next := make([]*Node, height)
-	node := &Node{value: value, next: next}
+	next := make([]*Node[T], height)
+	node := &Node[T]{value: value, next: next}
 	return node, height
 }
 

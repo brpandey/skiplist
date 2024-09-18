@@ -4,6 +4,7 @@ package list
 
 import (
 	"fmt"
+        "cmp"
 )
 
 // SkipList operation type enum
@@ -19,20 +20,20 @@ const (
 	SkipLevels = 5
 )
 
-type SkipList struct {
-	head   *Node
+type SkipList[T cmp.Ordered] struct {
+	head   *Node[T]
 	height int
 }
 
 // Constructor
-func NewList() *SkipList {
-	var n Node
-	n.next = make([]*Node, SkipLevels)
-	return &SkipList{head: &n, height: 1} // always have a head node so height is always 1
+func NewList[T cmp.Ordered]() *SkipList[T] {
+	var n Node[T]
+	n.next = make([]*Node[T], SkipLevels)
+	return &SkipList[T]{head: &n, height: 1} // always have a head node so height is always 1
 }
 
 // Simple find which indicates whether value was found and returns relevant node
-func (sl *SkipList) Find(value int) (*Node, bool) {
+func (sl *SkipList[T]) Find(value T) (*Node[T], bool) {
 	if sl == nil {
 		return nil, false
 	}
@@ -41,13 +42,13 @@ func (sl *SkipList) Find(value int) (*Node, bool) {
 }
 
 // Find node with specified value given SkipList operation type
-func (sl *SkipList) FindWithOp(value int, opType OpType) (*Node, []*Node, int) {
+func (sl *SkipList[T]) FindWithOp(value T, opType OpType) (*Node[T], []*Node[T], int) {
 	if sl == nil {
 		return nil, nil, -1
 	}
 	cur, top, startLevel := sl.head, sl.height-1, -1
-	var node *Node
-	var prevs []*Node
+	var node *Node[T]
+	var prevs []*Node[T]
 
 Outer: // start top down
 	for i := top; i >= 0; i-- {
@@ -89,22 +90,22 @@ Outer: // start top down
 }
 
 // Add new value if not already present to SkipList
-func (sl *SkipList) Add(value int) {
+func (sl *SkipList[T]) Add(value T) {
 	if sl == nil {
 		return
 	}
 	node, nodeHeight := NewNode(value)
-	fmt.Printf("Adding %d to %d levels from floor", value, nodeHeight)
+	fmt.Printf("Adding %v to %v levels from floor", value, nodeHeight)
 
 	if nodeHeight > sl.height {
 		sl.height = nodeHeight
 	}
 
-	var prev *Node
+	var prev *Node[T]
 	found, prevs, level := sl.FindWithOp(value, Insert)
 
 	if found != nil {
-		fmt.Printf("Value %d already found, hence no add", value)
+		fmt.Printf("Value %v already found, hence no add", value)
 		return
 	}
 
@@ -117,15 +118,15 @@ func (sl *SkipList) Add(value int) {
 	}
 }
 
-func (sl *SkipList) Delete(value int) bool {
+func (sl *SkipList[T]) Delete(value T) bool {
 	if sl == nil {
 		return false
 	}
-	var prev *Node
+	var prev *Node[T]
 	del, prevs, level := sl.FindWithOp(value, Delete)
 
 	if del == nil {
-		fmt.Printf("Value %d not found, hence no deletion", value)
+		fmt.Printf("Value %v not found, hence no deletion", value)
 		return false
 	}
 
@@ -140,7 +141,7 @@ func (sl *SkipList) Delete(value int) bool {
 
 // Check for vertical levels that are empty, given that a node has been deleted
 // Empty levels can only be singular or contiguous
-func (sl *SkipList) Prune() bool {
+func (sl *SkipList[T]) Prune() bool {
 	if sl == nil {
 		return false
 	}
@@ -159,15 +160,15 @@ func (sl *SkipList) Prune() bool {
 }
 
 // Display skiplist structure ensuring columns are aligned
-func (sl *SkipList) Display() {
+func (sl *SkipList[T]) Display() {
 	if sl == nil {
 		return
 	}
 	fmt.Println("\nSkip List:")
 	cur := sl.head
 
-	// store key->column info in map
-	columns := make(map[int]int)
+	// store T->column info in map
+	columns := make(map[T]int)
 
 	// count elements in botttom row
 	for i := 0; cur.next[0] != nil; i++ {
@@ -179,18 +180,18 @@ func (sl *SkipList) Display() {
 }
 
 // Show skiplist structure with or without aligning columns
-func (sl *SkipList) Show(columns map[int]int) {
+func (sl *SkipList[T]) Show(columns map[T]int) {
 	if sl == nil {
 		return
 	}
 	top := sl.height - 1
-	var value int
+	var value T
 
 	for i := top; i >= 0; i-- {
 		// show all the node values from the head node,
 		// hence reset back to head for each level iteration
 		cur := sl.head
-		fmt.Printf("L%02d ", i)
+                fmt.Printf("L%02d ", i)
 
 		for col := 0; cur.next[i] != nil; col++ {
 			value = cur.next[i].value
@@ -198,7 +199,7 @@ func (sl *SkipList) Show(columns map[int]int) {
 			// print out arrow base until column matches correct columns value
 			for columns != nil {
 				if columns[value] == col {
-					fmt.Printf("-> %02d ", value)
+                                        fmt.Printf("-> %02v ", value)
 					break
 				} else {
 					fmt.Printf("------") // extend arrow base
